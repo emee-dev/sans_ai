@@ -1,0 +1,33 @@
+### Base
+GET http://localhost:3000/
+Content-Type: application/json
+
+
+### Hono security
+POST http://localhost:3000/hono-security
+Content-Type: application/json
+
+
+### Hono worker
+POST http://localhost:3000/worker
+Content-Type: application/json
+
+{
+    "text": "Hello from endpoint"
+}
+
+
+### Hash object
+POST http://localhost:3000/
+Content-Type: application/json
+Authorization: "Bearer _283iw"
+
+{
+    "email": "example@gmail.com",
+    "content": "This is very good for use."
+}
+
+
+### API Routes
+GET http://localhost:3000/api/users
+Content-Type: application/json

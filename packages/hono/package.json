@@ -1,0 +1,31 @@
+{
+  "name": "@trythis/hono-sansai",
+  "version": "0.0.1",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "./dist/*",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^1.1.20",
+    "@ai-sdk/openai": "^1.2.1",
+    "ai": "^4.1.53",
+    "ollama": "^0.5.14",
+    "ollama-ai-provider": "^1.2.0",
+    "tsup": "8.4.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "hono": "^4.7.4",
+    "typescript": "^5.8.2"
+  }
+}
