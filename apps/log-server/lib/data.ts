@@ -1,27 +1,19 @@
 export type Log = {
-  id: string
-  message: string
-  level: "info" | "warning" | "error" | "debug"
-  tags: string[]
-  timestamp: string
-  source: string
-  metadata?: Record<string, any>
-}
+  id: string;
+  message: string;
+  level: "info" | "warning" | "error" | "debug";
+  tags: string[];
+  timestamp: string;
+  endpoint: string;
+  metadata?: Record<string, any>;
+};
 
-// This would typically be a database query
-// For example with Supabase:
-// const { data } = await supabase
-//   .from('logs')
-//   .select('*')
-//   .ilike('message', `%${query}%`)
-//   .contains('tags', [tag])
-//   .order('timestamp', { ascending: false })
 export async function getLogs({
-  query = "",
+  endpoint = "",
   tag = "",
 }: {
-  query?: string
-  tag?: string
+  endpoint?: string;
+  tag?: string;
 }): Promise<Log[]> {
   // Mock data for demonstration
   const logs: Log[] = [
@@ -31,7 +23,7 @@ export async function getLogs({
       level: "warning",
       tags: ["high", "low", "/api", "/users"],
       timestamp: "2023-10-15T14:30:00Z",
-      source: "api-server",
+      endpoint: "/api/users",
     },
     {
       id: "2",
@@ -39,7 +31,7 @@ export async function getLogs({
       level: "error",
       tags: ["high", "database", "/api"],
       timestamp: "2023-10-15T14:35:00Z",
-      source: "database",
+      endpoint: "/api/users",
     },
     {
       id: "3",
@@ -47,7 +39,7 @@ export async function getLogs({
       level: "info",
       tags: ["auth", "/users", "login"],
       timestamp: "2023-10-15T14:40:00Z",
-      source: "auth-service",
+      endpoint: "/api/payments",
     },
     {
       id: "4",
@@ -55,7 +47,7 @@ export async function getLogs({
       level: "info",
       tags: ["cache", "performance"],
       timestamp: "2023-10-15T14:45:00Z",
-      source: "cache-service",
+      endpoint: "/",
     },
     {
       id: "5",
@@ -63,7 +55,7 @@ export async function getLogs({
       level: "warning",
       tags: ["api", "rate-limit", "/api/users"],
       timestamp: "2023-10-15T14:50:00Z",
-      source: "api-gateway",
+      endpoint: "/api/logs",
     },
     {
       id: "6",
@@ -71,7 +63,7 @@ export async function getLogs({
       level: "warning",
       tags: ["system", "memory", "high"],
       timestamp: "2023-10-15T14:55:00Z",
-      source: "monitoring",
+      endpoint: "/monitors",
     },
     {
       id: "7",
@@ -79,7 +71,7 @@ export async function getLogs({
       level: "info",
       tags: ["backup", "scheduled", "database"],
       timestamp: "2023-10-15T15:00:00Z",
-      source: "backup-service",
+      endpoint: "/api-keys",
     },
     {
       id: "8",
@@ -87,7 +79,7 @@ export async function getLogs({
       level: "error",
       tags: ["payment", "exception", "/api/payments"],
       timestamp: "2023-10-15T15:05:00Z",
-      source: "payment-service",
+      endpoint: "/payments",
     },
     {
       id: "9",
@@ -95,26 +87,23 @@ export async function getLogs({
       level: "info",
       tags: ["user", "registration", "/api/users"],
       timestamp: "2023-10-15T15:10:00Z",
-      source: "user-service",
+      endpoint: "/webhook",
     },
-  ]
+  ];
 
-  // Filter by search query
-  let filteredLogs = logs
+  // Filter by endpoint
+  let filteredLogs = logs;
 
-  if (query) {
-    filteredLogs = filteredLogs.filter(
-      (log) =>
-        log.message.toLowerCase().includes(query.toLowerCase()) ||
-        log.source.toLowerCase().includes(query.toLowerCase()),
-    )
+  if (endpoint) {
+    filteredLogs = filteredLogs.filter((log) =>
+      log.endpoint.toLowerCase().includes(endpoint.toLowerCase())
+    );
   }
 
   // Filter by tag
   if (tag) {
-    filteredLogs = filteredLogs.filter((log) => log.tags.includes(tag))
+    filteredLogs = filteredLogs.filter((log) => log.tags.includes(tag));
   }
 
-  return filteredLogs
+  return filteredLogs;
 }
-

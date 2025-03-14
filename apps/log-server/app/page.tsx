@@ -1,130 +1,181 @@
 "use client";
 
-import { Search } from "lucide-react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { getLogs, Log } from "@/lib/data";
-import { useEffect, useState } from "react";
+import { api } from "@/convex/_generated/api";
+import { useCopy } from "@/hooks/use-copy";
+import { shortenNumber, useFingerPrint } from "@/hooks/use-fingerprint";
+import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import {
+  Check,
+  Copy,
+  Loader2,
+  PillIcon,
+  StarIcon,
+  WandIcon,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
-export default function LogsPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string; tag?: string }>;
-}) {
-  const [query, setQuery] = useState("");
-  const [tag, setTag] = useState("");
-  const [logs, setLogs] = useState<Log[]>([]);
+export default function Component() {
+  const { copied, copyToClipboard } = useCopy();
+  const { fingerPrintId } = useFingerPrint();
+  const router = useRouter();
 
-  async function getSearch() {
-    const { q, tag } = await searchParams;
+  const {
+    data: hasAccountData,
+    isPending: hasAccountIsPending,
+    error: hasAccountError,
+    refetch,
+  } = useQuery(convexQuery(api.log.hasAccount, { fingerPrintId }));
 
-    let logs = await getLogs({ query: q, tag });
-    setLogs(logs);
-  }
+  const {
+    mutate: createUser,
+    data: createUserData,
+    isPending: createUserIsPending,
+    error: createUserError,
+  } = useMutation({
+    mutationFn: useConvexMutation(api.log.createUserAccount),
+  });
 
   useEffect(() => {
-    getSearch();
-  }, []);
+    if (hasAccountError) {
+      toast("Account validation failed!", {
+        description: `Error: ${hasAccountError.message}`,
+        action: {
+          label: "Retry",
+          onClick: () => refetch(),
+        },
+      });
+    }
+
+    if (createUserError && fingerPrintId) {
+      toast("Account creation failed!", {
+        description: `Error: ${createUserError.message}`,
+        action: {
+          label: "Retry",
+          onClick: () => createUser({ fingerPrintId }),
+        },
+      });
+    }
+
+    if (createUserData && !createUserIsPending) {
+      toast("Account created!", {
+        description: "You have created an account.",
+        action: {
+          label: "Redirect me",
+          onClick: () => router.push(`/${fingerPrintId}`),
+        },
+      });
+    }
+  }, [
+    hasAccountError,
+    createUserError,
+    createUserData,
+    createUserIsPending,
+    fingerPrintId,
+  ]);
 
   return (
     <div className="container mx-auto py-10">
       <div className="flex flex-col space-y-8">
-        <div className="flex flex-col space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Server Logs</h1>
-          <p className="text-muted-foreground">
-            View and search through server logs
-          </p>
-        </div>
-
-        <div className="flex w-full max-w-sm items-center space-x-2">
-          <form
-            className="flex w-full max-w-sm items-center space-x-2"
-            action="/logs"
-          >
-            <Input
-              type="search"
-              name="q"
-              placeholder="Search logs..."
-              defaultValue={query}
-              className="flex-1"
-            />
-            <Button type="submit" size="icon">
-              <Search className="h-4 w-4" />
-              <span className="sr-only">Search</span>
-            </Button>
-          </form>
-        </div>
-
-        {tag && (
-          <div className="flex items-center space-x-2">
-            <p className="text-sm text-muted-foreground">Filtered by tag:</p>
-            <Badge variant="secondary">{tag}</Badge>
-            <Button variant="link" size="sm" asChild>
-              <Link href="/">Clear filter</Link>
-            </Button>
+        <div className="flex items-center">
+          <div className="flex flex-col space-y-2">
+            <h1 className="text-lg font-bold tracking-tight">Server Logs</h1>
           </div>
-        )}
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {logs.map((log) => (
-            <Card key={log.id}>
-              <CardHeader>
-                <CardTitle className="flex justify-between items-start">
-                  <span className="text-base font-medium">{log.level}</span>
-                  <Badge variant={getBadgeVariant(log.level)}>
-                    {log.level}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm">{log.message}</p>
-              </CardContent>
-              <CardFooter className="flex flex-col items-start space-y-2">
-                <div className="flex flex-wrap gap-2">
-                  {log.tags.map((tag) => (
-                    <Badge key={tag} variant="outline">
-                      <Link href={`/?tag=${tag}`}>{tag}</Link>
-                    </Badge>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(log.timestamp).toLocaleString()}
-                </p>
-              </CardFooter>
-            </Card>
-          ))}
-
-          {logs.length === 0 && (
-            <div className="col-span-full flex justify-center py-10">
-              <p className="text-muted-foreground">No logs found</p>
-            </div>
-          )}
+          <div
+            className="ml-auto text-sm flex items-center gap-x-2"
+            onClick={() => copyToClipboard(fingerPrintId)}
+          >
+            <span>UserId: {shortenNumber(fingerPrintId)}</span>{" "}
+            {!copied && <Copy className="h-4" />}
+            {copied && <Check className="h-4" />}
+          </div>
         </div>
+        <Card className="mx-auto max-w-md font-geist">
+          <CardHeader>
+            <CardTitle className="text-xl font-bold">
+              Monitor server logs.
+            </CardTitle>
+            <CardDescription>
+              Create a a unique userId to proceed.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-4">
+            <div className="flex items-start gap-4">
+              <WandIcon className="h-6 w-6 fill-primary" />
+              <div>
+                <h3 className="font-medium">AI-Powered OSINT Insights</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Leverage AI-driven intelligence to extract actionable insights
+                  from data sources efficiently.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <PillIcon className="h-6 w-6 fill-primary" />
+              <div>
+                <h3 className="font-medium">Automated Data Collection</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Streamline intelligence gathering with minimal manual effort,
+                  allowing analysts to focus on critical decision-making.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-4">
+              <StarIcon className="h-6 w-6 fill-primary" />
+              <div>
+                <h3 className="font-medium">Built for Developers</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Modular, scalable, and cost-effective—designed for seamless
+                  integration into your existing workflow.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="flex">
+            {hasAccountIsPending ? (
+              <Button variant="default" className="w-full" disabled>
+                <Loader2 className="animate-spin mr-1" /> Verifying userId
+              </Button>
+            ) : createUserIsPending ? (
+              <Button
+                variant="default"
+                className="w-full flex items-center"
+                disabled
+              >
+                <Loader2 className="animate-spin mr-2" />
+                Creating account...
+              </Button>
+            ) : hasAccountData ? (
+              <Button
+                variant="default"
+                className="w-full"
+                onClick={() => router.push(`/${fingerPrintId}`)}
+              >
+                Goto Dashboard
+              </Button>
+            ) : (
+              <Button
+                variant="default"
+                className="w-full"
+                onClick={() => createUser({ fingerPrintId })}
+              >
+                Create account
+              </Button>
+            )}
+          </CardFooter>
+        </Card>
       </div>
     </div>
   );
-}
-
-function getBadgeVariant(
-  level: string
-): "default" | "destructive" | "outline" | "secondary" {
-  switch (level.toLowerCase()) {
-    case "error":
-      return "destructive";
-    case "warning":
-      return "secondary";
-    case "info":
-      return "default";
-    default:
-      return "outline";
-  }
 }

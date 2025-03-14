@@ -1,9 +1,12 @@
 import type React from "react";
+import { Toaster } from "@/components/ui/sonner";
 import "@/app/globals.css";
-import { Inter } from "next/font/google";
+import { Inter, Geist } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Providers } from "@/provider";
 
 const inter = Inter({ subsets: ["latin"] });
+const geist = Geist({ subsets: ["latin"] });
 
 export const metadata = {
   title: "Log Viewer",
@@ -17,15 +20,18 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <main className="min-h-screen bg-background">{children}</main>
-        </ThemeProvider>
+      <body className={`${inter.className} ${geist.className}`}>
+        <Providers>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <main className="min-h-screen bg-background">{children}</main>
+            <Toaster />
+          </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );
