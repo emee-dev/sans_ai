@@ -62,7 +62,7 @@ export default function LogsPage({
     { initialNumItems: 5 }
   );
 
-  // Non paginated does support tag queries
+  // Non paginated supports tag queries
   const {
     data: dataQueryWithTags,
     isPending: dataQueryWithTagsIsPending,
@@ -221,7 +221,6 @@ function renderServerLogs({
                 {log.method.toUpperCase()} {log.endpoint}
               </span>
             </Link>
-            {/* <Badge variant={getBadgeVariant(log.level)}>{log.level}</Badge> */}
             <Badge
               variant={getBadgeVariant(log.level)}
               className={`${getBadgeColor(log.level)}`}
