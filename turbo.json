@@ -11,6 +11,10 @@
     "dev": {
       "persistent": true,
       "cache": false
+    },
+    "convex:publish": {
+      "persistent": true,
+      "cache": false
     }
   }
 }
