@@ -1,52 +1,31 @@
+
+### Send all your AI logs here http://localhost:3000/api/userId
 POST http://localhost:3000/api/e787fa556fcdb56e7d18c05de27f1f88
 Content-Type: application/json
 
 {
-    "data": [
-        {
-            "detail": "Detected over 500 requests per minute from IP 203.0.113.5",
-            "endpoint": "/api/resources",
-            "issue": "Excessive API Calls",
-            "level": "medium",
-            "method": "get",
-            "recommendation": "Implement rate limiting and API usage monitoring.",
-            "tags": ["rate-limiting", "dos"]
-        },
-        {
-            "detail": "Unauthorized login attempt detected from IP 198.51.100.23",
-            "endpoint": "/api/auth/login",
-            "issue": "Brute Force Attack",
-            "level": "high",
-            "method": "post",
-            "recommendation": "Enforce multi-factor authentication and CAPTCHA verification.",
-            "tags": ["security", "authentication"]
-        },
-        {
-            "detail": "User data exposed in API response due to improper access controls",
-            "endpoint": "/api/users",
-            "issue": "Data Leakage",
-            "level": "critical",
-            "method": "get",
-            "recommendation": "Review access control policies and implement proper authorization checks.",
-            "tags": ["data-security", "privacy"]
-        },
-        {
-            "detail": "Unusual spike in database write operations detected",
-            "endpoint": "/api/orders",
-            "issue": "Potential DDoS Attack",
-            "level": "high",
-            "method": "post",
-            "recommendation": "Implement rate limiting and database query optimization.",
-            "tags": ["performance", "ddos"]
-        },
-        {
-            "detail": "Deprecated API version still in use by multiple clients",
-            "endpoint": "/api/v1/users",
-            "issue": "Deprecated API Usage",
-            "level": "low",
-            "method": "get",
-            "recommendation": "Notify users and enforce migration to the latest API version.",
-            "tags": ["api", "versioning"]
-        }
-    ]
+  "data": [
+    {
+      "detail": "JWT token generation uses a hardcoded secret key, making it vulnerable to attacks if the source code is compromised.",
+      "issue": "Insecure JWT Token Generation",
+      "level": "HIGH",
+      "recommendation": "Use a strong, randomly generated secret key stored securely outside the source code. Rotate keys periodically.",
+      "tags": [
+        "jwt",
+        "security-misconfiguration"
+      ]
+    },
+    {
+      "detail": "The route handler directly checks credentials against a hardcoded password in the source code. This is extremely risky as it exposes the password if the code is compromised.",
+      "issue": "Hardcoded Credentials",
+      "level": "CRITICAL",
+      "recommendation": "Never hardcode credentials. Use environment variables or a secure configuration service to store sensitive information.",
+      "tags": [
+        "credentials",
+        "security-misconfiguration"
+      ]
+    }
+  ],
+  "method": "GET",
+  "endpoint": "/users"
 }
