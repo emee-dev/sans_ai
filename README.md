@@ -4,7 +4,7 @@
 
 ### **AI-Powered Threat Detection & Incident Response**
 
-This project leverages AI-driven threat detection to enhance real-time cybersecurity. It passively monitors endpoint activity, identifies potential threats, and provides immediate feedback to mitigate risks, following OWASP best practices.
+This project leverages AI-driven threat detection to enhance real-time cybersecurity. It passively monitors endpoint activity, identifies potential threats, and provides immediate feedback to mitigate risks, following O-WASP best practices.
 
 ## **Features**
 
@@ -45,6 +45,10 @@ This project follows a **monorepo** structure, organized as follows:
   - **Node.js Worker Threads** – Offloads expensive AI operations to maintain non-blocking performance.
 
 ---
+
+## Demo
+
+Vimeo here [Video](https://vimeo.com/1066139866?share=copy)
 
 ## **Getting Started**
 
