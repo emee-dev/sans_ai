@@ -27,9 +27,8 @@ app.use(
   sansAiMiddleware({
     worker,
     environment: "debug",
-    prompt: "",
-    // skipOnRedirects: true,
-    // includeRouteHandler: true,
+    skipOnRedirects: true,
+    includeRouteHandler: true,
     // transformRequest: ({ ctx }) => ({
     //   method: ctx.req.method,
     //   endpoint: ctx.req.path,
