@@ -48,7 +48,9 @@ This project follows a **monorepo** structure, organized as follows:
 
 ## Demo
 
-Vimeo here [Video](https://vimeo.com/1066139866?share=copy)
+Vimeo here [Video](https://vimeo.com/1066139866?share=copy).
+
+Log server [https://sans-ai-log-server.vercel.app/](https://sans-ai-log-server.vercel.app/)
 
 ## **Getting Started**
 
