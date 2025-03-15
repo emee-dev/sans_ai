@@ -3,9 +3,7 @@ import type { AIMessage } from "../index.js";
 export const encodeObjectToBinary = <T extends Record<string, unknown>[]>(
   obj: T
 ): Uint8Array<ArrayBufferLike> => {
-  let encodeText = new TextEncoder();
-
-  let encodedStr = encodeText.encode(JSON.stringify(obj));
+  const encodedStr = new TextEncoder().encode(JSON.stringify(obj));
 
   return encodedStr;
 };
@@ -13,9 +11,7 @@ export const encodeObjectToBinary = <T extends Record<string, unknown>[]>(
 export const decodeBinaryToObject = (
   buffer: Uint8Array<ArrayBufferLike>
 ): AIMessage[] => {
-  let decodeText = new TextDecoder();
-
-  let decodedText = decodeText.decode(buffer);
+  const decodedText = new TextDecoder().decode(buffer);
 
   if (!isValidJsonStr(decodedText)) {
     return [];

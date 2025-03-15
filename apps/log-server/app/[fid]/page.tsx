@@ -89,7 +89,7 @@ export default function LogsPage({
             </p>
           </div>
           <div
-            className="ml-auto text-sm flex items-center gap-x-2"
+            className="ml-auto text-sm flex items-center gap-x-2 cursor-pointer"
             onClick={() => copyToClipboard(fid)}
           >
             <span>UserId: {shortenNumber(fid)}</span>{" "}

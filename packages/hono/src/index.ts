@@ -87,6 +87,7 @@ export type AIMessage = {
   detail: string;
   level: string;
   recommendation: string;
+  tags: string[];
 };
 
 export type PayloadWithExtraProps = Payload & {
@@ -191,9 +192,41 @@ export const sansAiMiddleware = ({
 };
 
 /**
+ * Analyzes HTTP request and response payloads for security vulnerabilities
+ * using AI, based on OWASP best practices.
  *
- * @param param0
- * @returns
+ * @param {Object} params - The function parameters.
+ * @param {LanguageModelV1} params.model - The AI language model to use for analysis.
+ * @param {Payload} params.payload - The request payload containing HTTP details.
+ * @returns {Promise<Uint8Array<ArrayBufferLike>>} A binary-encoded object containing security insights.
+ *
+ * @throws {SansAIWorkerError} If the model or payload is missing.
+ *
+ * @example
+ * import { sansAIWorker } from "./worker";
+ * import { createGoogleGenerativeAI } from "some-ai-library";
+ *
+ * async function analyzeRequest() {
+ *   const google = createGoogleGenerativeAI({
+ *     apiKey: process.env.GEMINI_API_KEY,
+ *   });
+ *
+ *   const model = google("gemini-1.5-pro");
+ *
+ *   const payload = {
+ *     endpoint: "/api/login",
+ *     method: "POST",
+ *     req_headers: { "Content-Type": "application/json" },
+ *     res_text: "Invalid credentials",
+ *     res_json: { error: "Unauthorized" },
+ *     route_handler: "authHandler",
+ *   };
+ *
+ *   const analysisResult = await sansAIWorker({ model, payload });
+ *   console.log(analysisResult);
+ * }
+ *
+ * analyzeRequest();
  */
 export const sansAIWorker = async ({
   model,
@@ -201,7 +234,7 @@ export const sansAIWorker = async ({
 }: {
   model: LanguageModelV1;
   payload: Payload;
-}) => {
+}): Promise<Uint8Array<ArrayBufferLike>> => {
   const p = payload as PayloadWithExtraProps;
 
   if (!model) {
@@ -216,16 +249,19 @@ export const sansAIWorker = async ({
     );
   }
 
-  console.log("p", p);
-
   const { object } = await generateObject({
     temperature: 0.8,
     output: "array",
     schema: z.object({
       issue: z.string().describe("The issue eg SQl injectin attempt detected."),
       detail: z.string().describe("Extra details describing the issue."),
-      level: z.string().describe("Issue severity eg HIGH | LOW"),
+      level: z
+        .string()
+        .describe("Issue severity eg low | medium | high | critical"),
       recommendation: z.string().describe("Possible solution to the isssue"),
+      tags: z
+        .array(z.string())
+        .describe("Two or three tags eg ['data-security', 'privacy']"),
     }),
     model,
     prompt: `
@@ -250,16 +286,10 @@ export const sansAIWorker = async ({
       "detail": \`Detected "UNION SELECT" in query parameter "user_id"\`,
       "level": "HIGH",
       "recommendation": "Sanitize inputs and use parameterized queries",
+      "tags": ["sql-injection", "database"]
     }
     `,
   });
-
-  // const object = [
-  //   { id: "1", name: "emee" },
-  //   { id: "2", name: "fos" },
-  // ];
-
-  // console.log("object", object);
 
   const buffer = encodeObjectToBinary(object);
 

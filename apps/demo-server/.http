@@ -3,31 +3,42 @@ GET http://localhost:3000/
 Content-Type: application/json
 
 
-### Hono security
-POST http://localhost:3000/hono-security
+### 1. Lack of Authentication (No authentication required)
+GET http://localhost:3000/users
 Content-Type: application/json
 
 
-### Hono worker
-POST http://localhost:3000/worker
+### 2. Hardcoded Credentials in Code
+POST http://localhost:3000/login
 Content-Type: application/json
 
 {
-    "text": "Hello from endpoint"
+    "username": "admin",
+    "password": "supersecretpassword"
 }
 
 
-### Hash object
-POST http://localhost:3000/
+### 3. Exposing Sensitive Data (Leaking user details)
+GET http://localhost:3000/user/1
 Content-Type: application/json
 Authorization: "Bearer _283iw"
 
-{
-    "email": "example@gmail.com",
-    "content": "This is very good for use."
-}
+
+### 4. SQL Injection Vulnerability
+GET http://localhost:3000/search?q=sansai
+Content-Type: application/json
 
 
-### API Routes
-GET http://localhost:3000/api/users
+### 5. Using Predictable IDs (Insecure Direct Object References - IDOR)
+GET http://localhost:3000/api/profile/1
+Content-Type: application/json
+
+
+### 7. Insecure JWT Handling (Using a static, insecure secret)
+GET http://localhost:3000/api/jwt
+Content-Type: application/json
+
+
+### 8. Exposing Stack Traces in Errors
+GET http://localhost:3000/api/crash
 Content-Type: application/json

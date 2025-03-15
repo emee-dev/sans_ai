@@ -20,6 +20,7 @@ export const createLog = mutation({
       detail: args.detail,
       level: args.level.toLowerCase(),
       recommendation: args.recommendation,
+      
       method: args.method.toLowerCase(),
       endpoint: args.endpoint.toLowerCase(),
       fingerPrintId: args.fingerPrintId,

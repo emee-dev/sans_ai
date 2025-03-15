@@ -4,6 +4,20 @@ import { fetchMutation, fetchQuery } from "convex/nextjs";
 
 type Logs = Doc<"logs">;
 
+type AIMessage = {
+  issue: string;
+  detail: string;
+  level: string;
+  recommendation: string;
+  tags: string[];
+};
+
+type AIRequest = {
+  data: AIMessage[];
+  method: string;
+  endpoint: string;
+};
+
 export const POST = async (req: Request) => {
   try {
     const url = new URL(req.url);
@@ -26,19 +40,43 @@ export const POST = async (req: Request) => {
       );
     }
 
-    const arg = (await req.json()) as { data: Logs[] };
+    const arg = (await req.json()) as AIRequest;
     const logs = arg.data;
+    const method = arg.method;
+    const endpoint = arg.endpoint;
+
+    if (!logs && !method && !endpoint) {
+      return Response.json(
+        {
+          message:
+            "Incomplete parameters. Please provide data, method, and endpoint to complete the request.",
+          data: null,
+        },
+        { status: 403 }
+      );
+    }
+
+    if (logs.length <= 0) {
+      return Response.json(
+        {
+          message: "Skipped this request due to insufficent context.",
+          data: null,
+        },
+        { status: 404 }
+      );
+    }
 
     const results = await Promise.allSettled(
       logs.map((log) =>
         fetchMutation(api.log.createLog, {
-          fingerPrintId: user.fingerPrintId,
           issue: log.issue,
           detail: log.detail,
           level: log.level.toLowerCase(),
-          method: log.method.toLowerCase(),
           recommendation: log.recommendation,
-          endpoint: log.endpoint.toLowerCase(),
+
+          method: method.toLowerCase(),
+          fingerPrintId: user.fingerPrintId,
+          endpoint: endpoint.toLowerCase(),
           tags: log.tags.map((item) => item.toLowerCase()),
         })
       )
@@ -56,6 +94,7 @@ export const POST = async (req: Request) => {
       message: "Batch processing complete",
       successes,
       errors,
+      data: null,
     });
   } catch (error) {
     console.error(error);

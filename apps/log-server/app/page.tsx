@@ -93,7 +93,7 @@ export default function Component() {
             <h1 className="text-lg font-bold tracking-tight">Server Logs</h1>
           </div>
           <div
-            className="ml-auto text-sm flex items-center gap-x-2"
+            className="ml-auto text-sm flex items-center gap-x-2 cursor-pointer"
             onClick={() => copyToClipboard(fingerPrintId)}
           >
             <span>UserId: {shortenNumber(fingerPrintId)}</span>{" "}
@@ -103,9 +103,7 @@ export default function Component() {
         </div>
         <Card className="mx-auto max-w-md font-geist">
           <CardHeader>
-            <CardTitle className="text-xl font-bold">
-              Monitor server logs.
-            </CardTitle>
+            <CardTitle className="text-xl font-bold">View LLM logs.</CardTitle>
             <CardDescription>
               Create a a unique userId to proceed.
             </CardDescription>

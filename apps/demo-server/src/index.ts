@@ -3,8 +3,8 @@ import { Hono } from "hono";
 import path from "node:path";
 import { Worker } from "node:worker_threads";
 import api from "./api/route.js";
-import { hashObject } from "./utils/index.js";
 import { sansAiMiddleware } from "@trythis/hono-sansai";
+import axios from "axios";
 
 const app = new Hono();
 
@@ -16,12 +16,17 @@ const worker = new Worker(path.resolve("src", "./worker.js"));
 worker.on("error", (err) => {
   console.error(`Worker err:`, err);
 });
-// Handle exit
-// worker.on("exit", (code) => {
-//   if (code !== 0) {
-//     console.error(`Worker stopped with exit code ${code}`);
-//   }
-// });
+
+const cleanup = async () => {
+  console.log("\nGracefully shutting down...");
+  await worker.terminate();
+  console.log("Worker terminated.");
+  process.exit(0);
+};
+
+// Listen for termination signals
+process.on("SIGINT", cleanup);
+process.on("SIGTERM", cleanup);
 
 app.use(
   sansAiMiddleware({
@@ -35,8 +40,22 @@ app.use(
     //   error: undefined, // disable error
     // }),
     // prepareAiPayload: ({ payload }) => ({}),
-    onWorkerMessage: ({ msg }) => {
+    onWorkerMessage: ({ msg, ctx }) => {
       console.log("msg", msg);
+
+      try {
+        axios.post(
+          "https://webhook.site/45d4809e-e995-40a2-bcd1-0c98d077b743",
+          {
+            data: msg || [],
+            method: ctx.req.method,
+            endpoint: ctx.req.path,
+          }
+        );
+      } catch (error: any) {
+        // ignore the error or resend the api call
+        console.log(error.message);
+      }
     },
   })
 );
@@ -45,26 +64,42 @@ app.get("/", (c) => {
   return c.text("Hello Hono!");
 });
 
-app.post("/hono-security", (c) => {
-  // throw new Error("Invalid route.");
-  return c.text("Hono security!");
+// 1. Lack of Authentication (No authentication required)
+app.get("/users", async (c) => {
+  return c.json([
+    { id: 1, username: "admin" },
+    { id: 2, username: "user" },
+  ]);
 });
 
-app.post("/worker", async (c) => {
-  const params = (await c.req.json()) as { text: string };
+// 2. Hardcoded Credentials in Code
+app.post("/login", async (c) => {
+  const ADMIN_PASSWORD = "supersecretpassword"; // Hardcoded password
 
-  return c.text(params.text);
+  const { username, password } = await c.req.json();
+  if (username === "admin" && password === ADMIN_PASSWORD) {
+    return c.json({ token: "insecure-jwt-token" }); // Fake token
+  }
+  return c.json({ error: "Invalid credentials" }, 401);
 });
 
-app.post("/", async (c) => {
-  const payload = await c.req.json();
-  const hash = await hashObject(payload);
-
+// 3. Exposing Sensitive Data (Leaking user details)
+app.get("/user/:id", async (c) => {
+  const id = c.req.param("id");
   return c.json({
-    payload,
-    hash,
-    h: c.req.header(),
+    id,
+    username: "admin",
+    password: "plaintextpassword", // Storing passwords in plaintext
+    email: "admin@example.com",
+    creditCard: "4111 1111 1111 1111", // Exposing sensitive info
   });
+});
+
+// 4. SQL Injection Vulnerability
+app.get("/search", async (c) => {
+  const query = c.req.query("q");
+  const sql = `SELECT * FROM users WHERE username = '${query}'`; // Directly inserting user input
+  return c.text(`Executing query: ${sql}`); // Exposing raw SQL query
 });
 
 serve(
